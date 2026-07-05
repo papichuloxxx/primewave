@@ -72,7 +72,7 @@ if (quoteForm) {
   const stepTitleSpan = document.getElementById('stepTitle');
   const formProgress = document.getElementById('formProgress');
 
-  const stepTitles = ['Select Service', 'Client Type', 'Your Details'];
+  const stepTitles = ['Select Service', 'Project Details', 'Your Details'];
   let currentStep = 0;
 
   // Option selection logic (radio buttons)
@@ -163,14 +163,23 @@ if (quoteForm) {
     
     const formData = new FormData(quoteForm);
     const service = formData.get('serviceRequired');
-    const clientType = formData.get('clientType');
+    const province = formData.get('projectProvince');
+    const area = formData.get('projectArea');
+    const location = `${area}, ${province}`;
+    const details = formData.get('projectDetails') || 'No details provided';
     const name = formData.get('fullName');
     const phone = formData.get('phoneNumber');
-    const location = formData.get('projectLocation');
+    const email = formData.get('emailAddress') || 'No email provided';
 
-    const message = `*New Quote Request*%0A%0A*Service Needed:* ${service}%0A*Client Type:* ${clientType}%0A*Name:* ${name}%0A*Phone:* ${phone}%0A*Location:* ${location}%0A%0A_Sent via PrimeWave Website_`;
+    const message = `*New Quote Request*%0A%0A*Service:* ${service}%0A*Location:* ${location}%0A*Details:* ${details}%0A%0A*Name:* ${name}%0A*Phone:* ${phone}%0A*Email:* ${email}%0A%0A_Sent via PrimeWave Website_`;
     
-    const whatsappUrl = `https://wa.me/263789969002?text=${message}`;
+    const fileInput = document.getElementById('projectFiles');
+    let fileWarning = '';
+    if (fileInput && fileInput.files.length > 0) {
+      fileWarning = '%0A%0A*(Please attach your files/drawings directly in this WhatsApp chat)*';
+    }
+    
+    const whatsappUrl = `https://wa.me/263789969002?text=${message}${fileWarning}`;
     window.open(whatsappUrl, '_blank');
   });
 }
@@ -188,5 +197,41 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
       window.scrollTo({ top, behavior: 'smooth' });
     }
+  });
+});
+
+// Project Gallery Filtering
+const filterBtns = document.querySelectorAll('.filter-btn');
+const projectCards = document.querySelectorAll('.project-card');
+
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Remove active styles from all buttons
+    filterBtns.forEach(b => {
+      b.classList.remove('bg-gold', 'text-white', 'border-gold', 'active');
+      b.classList.add('bg-white', 'text-charcoal', 'border-gray-300');
+    });
+
+    // Add active styles to clicked button
+    btn.classList.add('bg-gold', 'text-white', 'border-gold', 'active');
+    btn.classList.remove('bg-white', 'text-charcoal', 'border-gray-300');
+
+    const filterValue = btn.getAttribute('data-filter');
+
+    projectCards.forEach(card => {
+      if (filterValue === 'all' || card.getAttribute('data-category') === filterValue) {
+        card.style.display = 'block';
+        setTimeout(() => {
+          card.style.opacity = '1';
+          card.style.transform = 'scale(1)';
+        }, 50);
+      } else {
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+          card.style.display = 'none';
+        }, 300);
+      }
+    });
   });
 });
